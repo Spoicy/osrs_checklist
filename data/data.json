@@ -1,0 +1,37 @@
+[{
+		"item": "Rune full helm",
+		"chance": "1/23.6",
+		"rarity": "FF56E156",
+		"icon": "https://oldschool.runescape.wiki/images/Rune_full_helm.png",
+		"unlocked": 1
+	}, {
+		"item": "Rune longsword",
+		"chance": "1/23.6",
+		"rarity": "FF56E156",
+		"icon": "https://oldschool.runescape.wiki/images/Rune_longsword.png",
+		"unlocked": 0
+	}, {
+		"item": "Rune kiteshield",
+		"chance": "1/39.33",
+		"rarity": "FFFFED4C",
+		"icon": "https://oldschool.runescape.wiki/images/Rune_kiteshield.png",
+		"unlocked": 0
+	}, {
+		"item": "Rune chainbody",
+		"chance": "1/39.33",
+		"rarity": "FFFFED4C",
+		"icon": "https://oldschool.runescape.wiki/images/Rune_chainbody.png",
+		"unlocked": 1
+	}, {
+		"item": "Rune platelegs",
+		"chance": "1/39.33",
+		"rarity": "FFFFED4C",
+		"icon": "https://oldschool.runescape.wiki/images/Rune_platelegs.png",
+		"unlocked": 0
+	}, {
+		"item": "Hill giant club",
+		"chance": "1/118",
+		"rarity": "FFFF863C",
+		"icon": "https://oldschool.runescape.wiki/images/Hill_giant_club.png",
+		"unlocked": 0
+	}]

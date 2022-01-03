@@ -16,12 +16,13 @@ int winWidth;
 int winHeight;
 int rowHeight = 64;
 int fontsize = 24;
+int padding = 24;
 int fontHeight = fontsize*2/3;
 int fontpos;
 int shapeX;
 int shapeY;
+int redrawCheck = 0;
 String temp;
-File dircheck = dataFile("data/checklist.png");
 PShape yes;
 PShape no;
 PImage output;
@@ -40,6 +41,10 @@ void setup() {
   imageMode(CENTER);
   items = loadJSONArray("data.json");
   itemsAmount = items.size();
+  iconpos = getIconSize() + padding;
+  itemtextpos = getItemSize() + padding;
+  chancetextpos = getChanceSize() + padding;
+  checkpos = itemtextpos+chancetextpos+iconpos;
   size(700, 600);
   background(0xFFE2DBC8);
   yes = loadShape("Yes_check.svg");
@@ -77,8 +82,8 @@ int getIconSize() {
   int highestSize = 0;
   for (int i = 0; i < itemsAmount; i++) {
     tempItem = items.getJSONObject(i);
-    tempIcon = downImg.load(tempItem.getString("icon"), sketchPath("test.png"));
-    tempIcon.resize(0,rowHeight-24);
+    tempIcon = downImg.load(tempItem.getString("icon"), sketchPath("temp/icon.png"));
+    tempIcon.resize(0,rowHeight-padding);
     if (tempIcon.width > highestSize) {
       highestSize = tempIcon.width;
     }
@@ -86,22 +91,38 @@ int getIconSize() {
   return highestSize;
 }
 
+void mousePressed() {
+  for (int i = 0; i < itemsAmount; i++) {
+    if (mouseX >= checkpos && mouseX <= checkpos + rowHeight && mouseY >= rowHeight*i && mouseY <= rowHeight*i+rowHeight) {
+      tempItem = items.getJSONObject(i);
+      if (tempItem.getInt("unlocked") == 0) {
+        tempItem.setInt("unlocked", 1);
+      } else {
+        tempItem.setInt("unlocked", 0);
+      }
+      items.setJSONObject(i, tempItem);
+      saveJSONArray(items, "data.json");
+      redrawCheck = 1;
+    }
+  }
+  if (redrawCheck == 1) {
+    redraw();
+  }
+}
+
 void draw() {
   fill(0xFFD8CCB4);
   stroke(0xFF94866D);
   winHeight = itemsAmount*rowHeight + 1;
   // Set the necessary position values
-  iconpos = getIconSize() + 24;
-  itemtextpos = getItemSize() + 24;
-  chancetextpos = getChanceSize() + 24;
-  checkpos = itemtextpos+chancetextpos+iconpos;
+  winWidth = iconpos+itemtextpos+chancetextpos+rowHeight+1;
   // Go through all items in JSON and create a row for each one
   for (int i = 0; i < itemsAmount; i++) {
     ystart = i*rowHeight; //<>//
     fontpos = ystart + fontHeight + (rowHeight-fontHeight)/2 + 1;
     currItem = items.getJSONObject(i);
-    currIcon = downImg.load(currItem.getString("icon"), sketchPath("test.png"));
-    currIcon.resize(0,rowHeight-24);
+    currIcon = downImg.load(currItem.getString("icon"), sketchPath("temp/icon.png"));
+    currIcon.resize(0,rowHeight-padding);
     shapeX = checkpos+rowHeight/2+1;
     shapeY = ystart+rowHeight/2+1;
     // Create the table row with rectangles
@@ -121,13 +142,14 @@ void draw() {
     text(currItem.getString("chance"), iconpos+itemtextpos+chancetextpos/2+1, fontpos);
     // Set a checkmark or red x depending on if item is unlocked
     if (currItem.getInt("unlocked") == 0) {
-      shape(no, shapeX, shapeY, rowHeight-24, rowHeight-24);
+      shape(no, shapeX, shapeY, rowHeight-padding, rowHeight-padding);
     } else {
-      shape(yes, shapeX, shapeY, rowHeight-24, rowHeight-24);
+      shape(yes, shapeX, shapeY, rowHeight-padding, rowHeight-padding);
     }
   }
-  output = get(0,0,iconpos+itemtextpos+chancetextpos+rowHeight+1, winHeight);
+  output = get(0,0,winWidth, winHeight);
   output.save("output/checklist.png");
+  redrawCheck = 0;
 }
 
 // Code from Processing Forums user Flolo

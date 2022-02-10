@@ -14,6 +14,9 @@ int chancetextpos;
 int checkpos;
 int winWidth;
 int winHeight;
+int editWidth = 0;
+int saveWidth = 0;
+int stroke = 2;
 int rowHeight = 64;
 int fontsize = 24;
 int padding = 24;
@@ -22,6 +25,7 @@ int fontpos;
 int shapeX;
 int shapeY;
 int redrawCheck = 0;
+int editCheck = 0;
 String temp;
 PShape yes;
 PShape no;
@@ -39,8 +43,14 @@ void setup() {
   textAlign(CENTER);
   shapeMode(CENTER);
   imageMode(CENTER);
+  stroke(0xFF94866D);
+  strokeWeight(stroke);
   items = loadJSONArray("data.json");
   itemsAmount = items.size();
+  for (int i = 0; i < itemsAmount; i++) {
+    tempItem = items.getJSONObject(i);
+    downImg.load(tempItem.getString("icon"), sketchPath("temp/" + i + ".png"));
+  }
   iconpos = getIconSize() + padding;
   itemtextpos = getItemSize() + padding;
   chancetextpos = getChanceSize() + padding;
@@ -49,7 +59,6 @@ void setup() {
   background(0xFFE2DBC8);
   yes = loadShape("Yes_check.svg");
   no = loadShape("Red_X.svg");
-  noLoop();
 }
 
 int getItemSize() {
@@ -81,8 +90,7 @@ int getChanceSize() {
 int getIconSize() {
   int highestSize = 0;
   for (int i = 0; i < itemsAmount; i++) {
-    tempItem = items.getJSONObject(i);
-    tempIcon = downImg.load(tempItem.getString("icon"), sketchPath("temp/icon.png"));
+    tempIcon = loadImage("temp/" + i + ".png");
     tempIcon.resize(0,rowHeight-padding);
     if (tempIcon.width > highestSize) {
       highestSize = tempIcon.width;
@@ -93,7 +101,7 @@ int getIconSize() {
 
 void mousePressed() {
   for (int i = 0; i < itemsAmount; i++) {
-    if (mouseX >= checkpos && mouseX <= checkpos + rowHeight && mouseY >= rowHeight*i && mouseY <= rowHeight*i+rowHeight) {
+    if (mouseX >= checkpos && mouseX <= checkpos + rowHeight && mouseY >= rowHeight*i && mouseY <= rowHeight*i+rowHeight && editCheck == 0) {
       tempItem = items.getJSONObject(i);
       if (tempItem.getInt("unlocked") == 0) {
         tempItem.setInt("unlocked", 1);
@@ -101,16 +109,65 @@ void mousePressed() {
         tempItem.setInt("unlocked", 0);
       }
       items.setJSONObject(i, tempItem);
-      saveJSONArray(items, "data.json");
+      saveJSONArray(items, "data/data.json");
       redrawCheck = 1;
     }
   }
-  if (redrawCheck == 1) {
+  if (mouseX >= winWidth+padding && mouseX <= winWidth+padding*2+editWidth && mouseY >= winHeight-rowHeight && mouseY <= winHeight-1) {
+    if (editCheck == 0) {
+      editCheck = 1;
+    } else {
+      editCheck = 0;
+    }
     redraw();
   }
 }
 
+void updateIcon() {
+ // TODO: Function that updates icons when editing 
+}
+
+boolean overMenu() {
+  if (mouseX >= winWidth+padding && mouseX <= winWidth+padding*2+editWidth && mouseY >= winHeight-rowHeight && mouseY <= winHeight-1) {
+    return true;
+  }
+  return false;
+}
+
+boolean overCheck() {
+  if (mouseX >= checkpos && mouseX <= checkpos + rowHeight && mouseY <= winHeight) {
+    return true;
+  }
+  return false;
+}
+
+void updateHover() {
+  if ((overCheck() && editCheck == 0)|| overMenu()) {
+    cursor(HAND);
+  } else {
+    cursor(ARROW);
+  }
+}
+
+void setupMenus() {
+  String editPhrase = "";
+  if (editCheck == 0) {
+    editPhrase = "Enable editing";
+    editWidth = (int) textWidth(editPhrase);
+  } else {
+    editPhrase = "Disable editing";
+    editWidth = (int) textWidth(editPhrase);
+    saveWidth = (int) textWidth("Save");
+  }
+  fill(0xFFA9A9A9);
+  stroke(0xFF808080);
+  rect(winWidth+padding, winHeight-rowHeight, editWidth+padding, rowHeight-1);
+  fill(0xFF000000);
+  text(editPhrase, winWidth+padding+(editWidth+padding)/2, winHeight-padding);
+}
+
 void draw() {
+  background(0xFFE2DBC8);
   fill(0xFFD8CCB4);
   stroke(0xFF94866D);
   winHeight = itemsAmount*rowHeight + 1;
@@ -121,7 +178,7 @@ void draw() {
     ystart = i*rowHeight; //<>//
     fontpos = ystart + fontHeight + (rowHeight-fontHeight)/2 + 1;
     currItem = items.getJSONObject(i);
-    currIcon = downImg.load(currItem.getString("icon"), sketchPath("temp/icon.png"));
+    currIcon = loadImage("temp/" + i + ".png");
     currIcon.resize(0,rowHeight-padding);
     shapeX = checkpos+rowHeight/2+1;
     shapeY = ystart+rowHeight/2+1;
@@ -147,9 +204,13 @@ void draw() {
       shape(yes, shapeX, shapeY, rowHeight-padding, rowHeight-padding);
     }
   }
-  output = get(0,0,winWidth, winHeight);
-  output.save("output/checklist.png");
-  redrawCheck = 0;
+  setupMenus();
+  updateHover();
+  if (editCheck == 0 && redrawCheck == 1) {
+    output = get(0,0,winWidth, winHeight);
+    output.save("output/checklist.png");
+    redrawCheck = 0;
+  }
 }
 
 // Code from Processing Forums user Flolo
